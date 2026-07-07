@@ -1,4 +1,11 @@
 -mcpu=cortex-m33
 -mthumb
--mfloat-abi=hard
+-mabi=aapcs
 -mfpu=fpv5-sp-d16
+-mfloat-abi=hard
+-mfp16-format=ieee
+-mtp=soft
+-ftls-model=local-exec
+-mcmse
+-mlong-calls
+-mthumb
