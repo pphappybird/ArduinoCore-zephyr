@@ -47,6 +47,11 @@ foreach(variant ${VARIANTS})
 
 	# exclude other problematic macros shared between C and C++
 	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-fdiagnostics-color=always")
+	# zephyr-sdk >= 1.0.1 (GCC 14.3.0 + picolibc) already has picolibc as the
+	# default toolchain spec.  Passing -specs=picolibc.specs a second time causes
+	# a fatal "attempt to rename spec 'link' to already defined spec 'picolibc_link'"
+	# error that silently breaks core.a (files fail to compile, main.cpp.o is missing).
+	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-specs=picolibc\\.specs")
 
 	# get machine flags (-msomething) in a separate list
 	set(LLEXT_MACHINE_FLAGS ${LLEXT_BASE_CFLAGS})
