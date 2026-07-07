@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 #include <zephyr/kernel.h>
 #include <time.h>
 #include <zephyr/drivers/pinctrl.h>
@@ -108,23 +109,44 @@ EXPORT_LIBC_SYM(cos);
 EXPORT_LIBC_SYM(cosf);
 EXPORT_LIBC_SYM(exp);
 EXPORT_LIBC_SYM(exp2);
+EXPORT_LIBC_SYM(expf);
+EXPORT_LIBC_SYM(expm1);
 EXPORT_LIBC_SYM(fmod);
+EXPORT_LIBC_SYM(fmodf);
 EXPORT_LIBC_SYM(log);
 EXPORT_LIBC_SYM(logf);
+EXPORT_LIBC_SYM(log1p);
 EXPORT_LIBC_SYM(log2);
 EXPORT_LIBC_SYM(log10);
 EXPORT_LIBC_SYM(pow);
+EXPORT_LIBC_SYM(powf);
 EXPORT_LIBC_SYM(sin);
 EXPORT_LIBC_SYM(sinf);
 EXPORT_LIBC_SYM(sqrt);
 EXPORT_LIBC_SYM(sqrtf);
 EXPORT_LIBC_SYM(tan);
 EXPORT_LIBC_SYM(tanf);
+EXPORT_LIBC_SYM(tanhf);
 EXPORT_LIBC_SYM(ldexp);
+EXPORT_LIBC_SYM(frexp);
+EXPORT_LIBC_SYM(round);
+EXPORT_LIBC_SYM(floor);
+
+/*
+ * Some sketches/libraries may reference analogWrite even if the active board
+ * variant does not pull in wiring_analog.cpp into the loader image. Provide a
+ * weak no-op fallback so LLEXT link can resolve the symbol.
+ */
+__attribute__((weak)) void analogWrite(uint8_t pinNumber, int value) {
+	(void)pinNumber;
+	(void)value;
+}
+EXPORT_SYMBOL(analogWrite);
 
 // stdio.h
 EXPORT_LIBC_SYM(puts);
 EXPORT_LIBC_SYM(putchar);
+EXPORT_LIBC_SYM(fputs);
 EXPORT_LIBC_SYM(vsnprintf);
 
 EXPORT_SYMBOL(k_malloc);

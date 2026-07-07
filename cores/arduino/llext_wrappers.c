@@ -12,6 +12,17 @@
 
 #include <stddef.h>
 #include <stdarg.h>
+#include <stdio.h>
+
+/*
+ * picolibc defines putchar/putc/getchar/getc as function-like macros
+ * (e.g. putchar(c) -> putc(c, stdout)). Undefine them so the trampoline
+ * macros below can declare real functions with these names.
+ */
+#undef putchar
+#undef putc
+#undef getchar
+#undef getc
 
 /* ret func(void) */
 #define W0(ret, name)                                                                              \
@@ -158,12 +169,17 @@ W2(double, atan2, double, double)
 W1(double, cos, double)
 W1(double, exp, double)
 W1(double, exp2, double)
+W1(double, expm1, double)
 W2(double, fmod, double, double)
 W2(double, ldexp, double, int)
 W1(double, log10, double)
 W1(double, log2, double)
 W1(double, log, double)
+W1(double, log1p, double)
 W2(double, pow, double, double)
+W2(double, frexp, double, int *)
+W1(double, round, double)
+W1(double, floor, double)
 W1(double, sin, double)
 W1(double, sqrt, double)
 W1(double, tan, double)
@@ -174,10 +190,14 @@ W1(float, asinf, float)
 W1(float, atanf, float)
 W2(float, atan2f, float, float)
 W1(float, cosf, float)
+W1(float, expf, float)
 W1(float, logf, float)
+W2(float, fmodf, float, float)
+W2(float, powf, float, float)
 W1(float, sinf, float)
 W1(float, sqrtf, float)
 W1(float, tanf, float)
+W1(float, tanhf, float)
 
 #ifdef CONFIG_ARM
 /* ARM compiler ABI helpers: need to preserve all RTABI argument registers */
@@ -233,6 +253,7 @@ VN(__gnu_thumb1_case_si)
 /* stdio.h */
 W1(int, puts, const char *)
 W1(int, putchar, int)
+W2(int, fputs, const char *, FILE *)
 W4(int, vsnprintf, char *, size_t, const char *, va_list)
 
 /* stdlib.h - atexit */
