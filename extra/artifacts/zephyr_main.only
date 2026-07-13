@@ -4,4 +4,7 @@
 # Files listed here are included by this package only, and automatically
 # excluded by all other artifacts.
 
-libraries/PDM/
+# NOTE: PDM used to be main-only, but it now also supports ARDUINO_KIT_PSE84_AI
+# (zephyr_contrib artifact), so it must no longer be listed here — otherwise
+# package_core.sh automatically strips libraries/PDM/ out of every other
+# artifact's package, including zephyr_contrib.

@@ -213,14 +213,14 @@ int PDMClass::begin(int channels, int sampleRate) {
 		int err = k_mem_slab_init(&pdm_slab, pdm_slab_buffer, SLAB_BLOCK_SIZE, SLAB_BLOCK_NUM);
 		if (err != 0) {
 			lastError = (err < 0) ? (err - 2000) : -2000; /* slab init failure */
-			return 0; /* failed slab initialization */
+			return 0;                                     /* failed slab initialization */
 		}
 		k_msgq_init(&pdm_rx_msgq, pdm_msgq_buffer, sizeof(void *), SLAB_BLOCK_NUM);
 
 		pdm_thread_stack = k_thread_stack_alloc(PDM_THREAD_STACK_SIZE, 0);
 		if (pdm_thread_stack == NULL) {
 			lastError = -3000; /* thread stack allocation failure */
-			return 0; /* failed thread stack allocation */
+			return 0;          /* failed thread stack allocation */
 		}
 
 		pdm_tid = k_thread_create(&pdm_thread_data, pdm_thread_stack, PDM_THREAD_STACK_SIZE,
@@ -263,7 +263,9 @@ int PDMClass::begin(int channels, int sampleRate) {
 		int start_ret = pdm_start();
 		if (start_ret < 0) {
 			printk("PDM: pdm_start (dmic_trigger START) failed, ret=%d\n", start_ret);
-			lastError = (start_ret < 0) ? (start_ret - 1000) : -200; /* offset so caller can tell it was the start step */
+			lastError = (start_ret < 0) ?
+							(start_ret - 1000) :
+							-200; /* offset so caller can tell it was the start step */
 			return 0;
 		}
 		printk("PDM: pdm_start OK\n");
