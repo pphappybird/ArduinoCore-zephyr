@@ -49,12 +49,16 @@ static void (*_onReceive)(void) = NULL;
  * ---- PDM DRIVER INTERFACE (zephyr dmic) ----
  */
 
-#if defined(ARDUINO_NANO33BLE) || defined(ARDUINO_GIGA)
+#if defined(ARDUINO_NANO33BLE) || defined(ARDUINO_GIGA) || defined(ARDUINO_KIT_PSE84_AI)
 
 static struct pcm_stream_cfg stream;
 static struct dmic_cfg cfg;
 /* the PDM mic zephyr device */
+#if defined(ARDUINO_KIT_PSE84_AI)
+static const struct device *const dmic_dev = DEVICE_DT_GET(DT_NODELABEL(dmic0));
+#else
 static const struct device *const dmic_dev = DEVICE_DT_GET(DT_NODELABEL(dmic_dev));
+#endif
 #if defined(ARDUINO_GIGA)
 static const struct device *dfsdm_dev = DEVICE_DT_GET(DT_NODELABEL(dfsdm));
 #endif
@@ -82,7 +86,8 @@ static int pdm_configure(int channels, int sampleRate) {
 
 		int err = device_init(dmic_dev);
 		if (err < 0) {
-			return -ENODEV;
+			printk("PDM: device_init(dmic_dev) failed, real err=%d\n", err);
+			return err; /* propagate the real driver error instead of masking as -ENODEV */
 		}
 	}
 	/* check on channels */
@@ -107,7 +112,15 @@ static int pdm_configure(int channels, int sampleRate) {
 
 	if (channels == 1) {
 		cfg.channel.req_num_chan = 1;
+#if defined(ARDUINO_KIT_PSE84_AI)
+		/* Onboard mic data pin P8_6 = PDM data line 3. The Infineon driver
+		 * maps a requested (ctl_idx, LR) pair to hardware PDM channel:
+		 *   pdm_ch = 2 * ctl_idx + (LR == RIGHT ? 1 : 0)
+		 * so (ctl_idx=1, RIGHT) selects channel 3, matching dmic0_ch3. */
+		cfg.channel.req_chan_map_lo = dmic_build_channel_map(0, 1, PDM_CHAN_RIGHT);
+#else
 		cfg.channel.req_chan_map_lo = dmic_build_channel_map(0, 0, PDM_CHAN_LEFT);
+#endif
 		cfg.streams[0].pcm_rate = sampleRate;
 		cfg.streams[0].block_size = SLAB_BLOCK_SIZE;
 	} else {
@@ -185,6 +198,7 @@ void pdm_thread(void *, void *, void *) {
  */
 
 PDMClass::PDMClass() : pdm_init(false), active(false), active_block{nullptr, 0, 0} {
+	lastError = 0;
 }
 
 PDMClass::~PDMClass() {
@@ -192,16 +206,20 @@ PDMClass::~PDMClass() {
 
 int PDMClass::begin(int channels, int sampleRate) {
 
+	lastError = 0;
+
 	/* SLAB & THREAD INITIALIZATION (to be performed once) */
 	if (!pdm_init) {
 		int err = k_mem_slab_init(&pdm_slab, pdm_slab_buffer, SLAB_BLOCK_SIZE, SLAB_BLOCK_NUM);
 		if (err != 0) {
+			lastError = (err < 0) ? (err - 2000) : -2000; /* slab init failure */
 			return 0; /* failed slab initialization */
 		}
 		k_msgq_init(&pdm_rx_msgq, pdm_msgq_buffer, sizeof(void *), SLAB_BLOCK_NUM);
 
 		pdm_thread_stack = k_thread_stack_alloc(PDM_THREAD_STACK_SIZE, 0);
 		if (pdm_thread_stack == NULL) {
+			lastError = -3000; /* thread stack allocation failure */
 			return 0; /* failed thread stack allocation */
 		}
 
@@ -224,10 +242,32 @@ int PDMClass::begin(int channels, int sampleRate) {
 		}
 #endif
 		/* configure the microphone */
-		if (pdm_configure(channels, sampleRate) < 0) {
+		if (!device_is_ready(dmic_dev)) {
+			printk("PDM: dmic_dev NOT ready\n");
+			lastError = -100; /* diagnostic: device not ready before configure */
+		} else {
+			printk("PDM: dmic_dev ready\n");
+		}
+		int cfg_ret = pdm_configure(channels, sampleRate);
+		if (cfg_ret < 0) {
+			printk("PDM: pdm_configure failed, ret=%d\n", cfg_ret);
+			lastError = cfg_ret; /* capture dmic_configure errno */
 			return 0;
 		}
-		/* start or resume receiving thread */
+		printk("PDM: pdm_configure OK\n");
+		/* Start the microphone BEFORE (re)starting the receiving thread.
+		 * dmic_read() only blocks while the device state is ACTIVE; if the
+		 * thread is started while the state is still CONFIGURED it busy-loops
+		 * on -EIO and can starve lower-priority threads (e.g. setup/loop),
+		 * preventing pdm_start() from ever running. */
+		int start_ret = pdm_start();
+		if (start_ret < 0) {
+			printk("PDM: pdm_start (dmic_trigger START) failed, ret=%d\n", start_ret);
+			lastError = (start_ret < 0) ? (start_ret - 1000) : -200; /* offset so caller can tell it was the start step */
+			return 0;
+		}
+		printk("PDM: pdm_start OK\n");
+		/* start or resume receiving thread now that data is flowing */
 		static bool thread_started = false;
 		if (!thread_started) {
 			// First boot: explicitly start the thread
@@ -236,10 +276,6 @@ int PDMClass::begin(int channels, int sampleRate) {
 		} else {
 			// Subsequent boots: just resume it
 			k_thread_resume(pdm_tid);
-		}
-		/* start the microphone */
-		if (pdm_start() < 0) {
-			return 0;
 		}
 		/* Set the status as ACTIVE */
 		active = true;

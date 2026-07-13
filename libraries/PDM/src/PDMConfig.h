@@ -47,6 +47,13 @@
 #else
 #error "Compilation runtime check: PDM_SAMPLE_BIT_WIDTH must be 16 or 24 for ARDUINO_GIGA"
 #endif
+#elif defined(ARDUINO_KIT_PSE84_AI)
+#define SLAB_BLOCK_NUM 4
+#define SLAB_ALIGN     32
+#if PDM_SAMPLE_BIT_WIDTH != 16
+#error "Compilation runtime check: PDM_SAMPLE_BIT_WIDTH must be set to 16 for ARDUINO_KIT_PSE84_AI"
+#endif
+#define SLAB_BLOCK_SIZE (PDM_NUMBER_OF_SAMPLES * 2)
 #endif
 
 #endif // ARDUINO_ZEPHYR_PDMCONFIG_H
