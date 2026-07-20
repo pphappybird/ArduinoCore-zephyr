@@ -253,48 +253,50 @@ spi1: &scb10 {
 /* PDM digital microphone - dmic0 on P8_5(PDM_CLK) / P8_6(PDM_DATA)   */
 /*                                                                    */
 /* Onboard MEMS microphones U7/U8 (Infineon IM73D122V01). The pins    */
-/* P8_5/P8_6 expose the "pdm3" alternate function, i.e. PDM data      */
-/* line 3, so hardware channel 3 (dmic0_ch3) reads this data line.    */
-/* Data is valid on the falling edge of PDM_CLK on this board.        */
-/*                                                                    */
-/* The Infineon PDM driver auto-derives the PDM clock divider from    */
-/* the peripheral clock frequency and the requested PCM sample rate   */
-/* (64x oversampling), so only the peripheral clock source and the    */
-/* RX DMA channel need to be enabled here.                            */
+/* P8_5/P8_6 expose the "pdm3" alternate function. Clock/divider/     */
+/* channel config ported from Infineon's reference overlay for the    */
+/* sister kit_pse84_eval_pse846gps2dbzc4a_m55 board (same silicon).    */
 /* ------------------------------------------------------------------ */
-&peri1_group1_16_5bit_0 {
+&clk_hf7 {
 	status = "okay";
-	clock-div = <1>;
+	source-path = <IFX_CLK_HF_IN_CLKPATH3>;
+};
+
+&peri1_group1_16_5bit_2 {
+	status = "okay";
+	clock-div = <2>;
+	div-frac-value = <7>;
 };
 
 &dma0 {
 	status = "okay";
 };
 
-&dmic0 {
+dmic_dev: &dmic0 {
 	status = "okay";
-	clocks = <&peri1_group1_16_5bit_0>;
+	clocks = <&peri1_group1_16_5bit_2>;
 	dmas = <&dma0 0>;
 	dma-names = "rx";
 	pinctrl-0 = <&p8_5_pdm3_pdm_clk &p8_6_pdm3_pdm_data>;
 	pinctrl-names = "default";
 };
 
+&dmic0_ch2 {
+	status = "okay";
+	use-alt-io;
+};
+
 &dmic0_ch3 {
 	status = "okay";
-	channel = <3>;
-	cic-decimation-code = <4>;	/* DECIM_32 */
 };
 
 &p8_5_pdm3_pdm_clk {
+	drive-strength = "half";
 	drive-push-pull;
-	/* DIAGNOSTIC: input-enable added temporarily so Cy_GPIO_Read() can
-	 * read back the pad state for toggle verification. Without this,
-	 * drive-push-pull alone selects CY_GPIO_DM_STRONG_IN_OFF, which
-	 * disables the input buffer and makes GPIO_PRT_IN reads meaningless
-	 * (always a stuck value) regardless of actual pin activity.
-	 * Remove once the diagnostic is no longer needed.
-	 */
+};
+
+&p8_6_pdm3_pdm_data {
+	drive-strength = "half";
 	input-enable;
 };
 
