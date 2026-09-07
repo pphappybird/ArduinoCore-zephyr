@@ -5,7 +5,6 @@
 -mfloat-abi=hard
 -mfp16-format=ieee
 -mtp=soft
--ftls-model=local-exec
 -mcmse
 -mlong-calls
 -mthumb

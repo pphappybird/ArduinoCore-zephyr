@@ -53,10 +53,18 @@ foreach(variant ${VARIANTS})
 	# error that silently breaks core.a (files fail to compile, main.cpp.o is missing).
 	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-specs=picolibc\\.specs")
 
+	# Drop this define for the sketch build: it would silently turn
+	# MicroPrintf()/Log() into no-ops in the sketch's own micro_log.cpp,
+	# killing TFLM debug output for no warning.
+	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-DTF_LITE_STRIP_ERROR_STRINGS.*")
+
 	# get machine flags (-msomething) in a separate list
+	# NOTE: REGEX must be anchored with ^, otherwise it can match paths
+	# containing "-m" (e.g. ".../ml-middleware/include") and strip them
+	# by mistake, breaking the following -isystem/-D flags.
 	set(LLEXT_MACHINE_FLAGS ${LLEXT_BASE_CFLAGS})
-	list(FILTER LLEXT_MACHINE_FLAGS INCLUDE REGEX "-m.*")
-	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-m.*")
+	list(FILTER LLEXT_MACHINE_FLAGS INCLUDE REGEX "^-m[a-zA-Z]")
+	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "^-m[a-zA-Z]")
 
 	# (temp) generate C++ flags from C flags
 	set(LLEXT_BASE_CXXFLAGS ${LLEXT_BASE_CFLAGS})
