@@ -9,6 +9,8 @@ manifest:
     path: modules/lib/ArduinoCore-zephyr
 
   remotes:
+    - name: infineon-github
+      url-base: https://github.com/Infineon
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
     - name: arduino
@@ -17,31 +19,45 @@ manifest:
       url-base: https://github.com/facchinm
     - name: pillo79
       url-base: https://github.com/pillo79
+    - name: lvgl
+      url-base: https://github.com/lvgl
 
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
-      revision: v4.4.0
+      remote: infineon-github
+      repo-path: ifx-zephyr
+      revision: main
       import:
         name-allowlist:
-          - cmsis
           - cmsis_6
-          - littlefs
-          - tinycrypt
           - mbedtls
-          - segger
-          - thrift
-          - mcuboot
-          - nanopb
-          - lvgl
-          - fatfs
-        path-allowlist:
-          - modules/hal/*
+          - trusted-firmware-m
+          - zcbor
 
-        # The actual list of enabled HALs is set by extra/bootstrap.sh via
-        # the 'manifest.project-filter' config. Enable all Zephyr HALs with:
-        #
-        #   west config -d manifest.project-filter
+    - name: lvgl
+      remote: lvgl
+      revision: 92708ebbbb88fed2db15dfe9324f0dc546222301
+      path: modules/lib/gui/lvgl
+
+    - name: mtb-ml-middleware
+      remote: infineon-github
+      repo-path: ml-middleware
+      revision: release-v3.2.0
+      path: modules/hal/infineon/ml-middleware/mtb-ml-middleware
+
+    - name: mtb-ml-tflite-micro
+      remote: infineon-github
+      repo-path: ml-tflite-micro
+      revision: release-v3.2.0
+      path: modules/hal/infineon/ml-tflite-micro/mtb-ml-tflite-micro
+
+    - name: hal_infineon
+      remote: infineon-github
+      repo-path: ifx-zephyr-hal_infineon
+      revision: master
+      path: modules/hal/infineon
+      groups:
+        - hal
 
     - name: ArduinoCore-API
       path: modules/lib/ArduinoCore-API
