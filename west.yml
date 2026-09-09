@@ -19,25 +19,37 @@ manifest:
       url-base: https://github.com/facchinm
     - name: pillo79
       url-base: https://github.com/pillo79
-    - name: lvgl
-      url-base: https://github.com/lvgl
 
   projects:
     - name: zephyr
-      remote: infineon-github
-      repo-path: ifx-zephyr
-      revision: main
+      remote: arduino
+      revision: zephyr-arduino-v4.4.1+
       import:
         name-allowlist:
+          - cmsis
           - cmsis_6
+          - littlefs
+          - tinycrypt
           - mbedtls
-          - trusted-firmware-m
-          - zcbor
+          - tf-psa-crypto
+          - segger
+          - thrift
+          - mcuboot
+          - nanopb
+          - lvgl
+          - fatfs
+        path-allowlist:
+          - modules/hal/*
 
-    - name: lvgl
-      remote: lvgl
-      revision: 92708ebbbb88fed2db15dfe9324f0dc546222301
-      path: modules/lib/gui/lvgl
+        # The actual list of enabled HALs is set by extra/bootstrap.sh via
+        # the 'manifest.project-filter' config. Enable all Zephyr HALs with:
+        #
+        #   west config -d manifest.project-filter
+
+    - name: cannectivity
+      path: modules/lib/cannectivity
+      url: https://github.com/CANnectivity/cannectivity.git
+      revision: cf24edd66ab173d20f734e3f3350b1a1c053a904
 
     - name: mtb-ml-middleware
       remote: infineon-github
@@ -63,3 +75,4 @@ manifest:
       path: modules/lib/ArduinoCore-API
       revision: master
       url: https://github.com/arduino/ArduinoCore-API
+
