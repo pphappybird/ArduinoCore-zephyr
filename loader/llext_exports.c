@@ -21,7 +21,7 @@
 #include <mbedtls/memory_buffer_alloc.h>
 #include <mbedtls/debug.h>
 #endif
-#include "nnlite_hello_world.h"
+/* #include "nnlite_hello_world.h" */
 #include "nnlite_micro_speech.h"
 
 #define FORCE_EXPORT_SYM(name)                                                                     \
@@ -163,9 +163,11 @@ EXPORT_SYMBOL(k_sys_work_q);
 EXPORT_SYMBOL(k_mem_slab_init);
 EXPORT_SYMBOL(k_mem_slab_free);
 
-/* NNLite (Infineon ML Middleware) hello_world backend - see nnlite_hello_world.c */
-EXPORT_SYMBOL(nnlite_hello_world_init);
-EXPORT_SYMBOL(nnlite_hello_world_infer);
+/*
+ * NNLite (Infineon ML Middleware) hello_world backend - see nnlite_hello_world.c
+ * EXPORT_SYMBOL(nnlite_hello_world_init);
+ * EXPORT_SYMBOL(nnlite_hello_world_infer);
+ */
 
 /* NNLite (Infineon ML Middleware) micro_speech backend - see nnlite_micro_speech.c */
 EXPORT_SYMBOL(nnlite_micro_speech_init);

@@ -9,6 +9,8 @@ manifest:
     path: modules/lib/ArduinoCore-zephyr
 
   remotes:
+    - name: infineon-github
+      url-base: https://github.com/Infineon
     - name: zephyrproject-rtos
       url-base: https://github.com/zephyrproject-rtos
     - name: arduino
@@ -20,8 +22,8 @@ manifest:
 
   projects:
     - name: zephyr
-      remote: zephyrproject-rtos
-      revision: v4.4.0
+      remote: arduino
+      revision: zephyr-arduino-v4.4.1+
       import:
         name-allowlist:
           - cmsis
@@ -29,6 +31,7 @@ manifest:
           - littlefs
           - tinycrypt
           - mbedtls
+          - tf-psa-crypto
           - segger
           - thrift
           - mcuboot
@@ -43,7 +46,33 @@ manifest:
         #
         #   west config -d manifest.project-filter
 
+    - name: cannectivity
+      path: modules/lib/cannectivity
+      url: https://github.com/CANnectivity/cannectivity.git
+      revision: cf24edd66ab173d20f734e3f3350b1a1c053a904
+
+    - name: mtb-ml-middleware
+      remote: infineon-github
+      repo-path: ml-middleware
+      revision: release-v3.2.0
+      path: modules/hal/infineon/ml-middleware/mtb-ml-middleware
+
+    - name: mtb-ml-tflite-micro
+      remote: infineon-github
+      repo-path: ml-tflite-micro
+      revision: release-v3.2.0
+      path: modules/hal/infineon/ml-tflite-micro/mtb-ml-tflite-micro
+
+    - name: hal_infineon
+      remote: infineon-github
+      repo-path: ifx-zephyr-hal_infineon
+      revision: master
+      path: modules/hal/infineon
+      groups:
+        - hal
+
     - name: ArduinoCore-API
       path: modules/lib/ArduinoCore-API
       revision: master
       url: https://github.com/arduino/ArduinoCore-API
+
