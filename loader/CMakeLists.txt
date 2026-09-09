@@ -4,6 +4,12 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+# Register nested Infineon ML Zephyr modules before Zephyr discovery.
+list(APPEND ZEPHYR_EXTRA_MODULES
+    "$ENV{ZEPHYR_BASE}/../modules/hal/infineon/ml-middleware"
+    "$ENV{ZEPHYR_BASE}/../modules/hal/infineon/ml-tflite-micro"
+)
+
 # get value of NORMALIZED_BOARD_TARGET early
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE} COMPONENTS yaml boards)
 
