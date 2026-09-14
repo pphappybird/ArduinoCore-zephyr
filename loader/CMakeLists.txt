@@ -23,6 +23,11 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(app LANGUAGES C CXX)
 
+# PSE84 NNLite uses DW0 channel 1; PDM occupies channel 0.
+if(CONFIG_ML_MIDDLEWARE_NNLITE AND CONFIG_BOARD_KIT_PSE84_AI_PSE846GPS2DBZC4A_M33)
+    zephyr_compile_definitions(NNLITE_DMA_CHAN=1)
+endif()
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/blobs)
 
 # Memory region relocation based on Kconfig
