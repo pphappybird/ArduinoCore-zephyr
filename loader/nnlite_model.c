@@ -46,8 +46,7 @@ static bool nnlite_runtime_ready;
 
 /** Handles are 1-based slot indices, so no loader-internal pointer is handed
  *  across the LLEXT boundary. */
-static struct nnlite_model_slot *nnlite_slot_from_handle(nnlite_model_t model)
-{
+static struct nnlite_model_slot *nnlite_slot_from_handle(nnlite_model_t model) {
 	uintptr_t index = (uintptr_t)model;
 
 	if ((index == 0U) || (index > NNLITE_MODEL_SLOT_COUNT)) {
@@ -63,8 +62,7 @@ static struct nnlite_model_slot *nnlite_slot_from_handle(nnlite_model_t model)
 
 /** Element size of a tensor in bytes, falling back to one byte when the
  *  middleware does not report one. */
-static uint32_t nnlite_element_size(int type_size)
-{
+static uint32_t nnlite_element_size(int type_size) {
 	if (type_size <= 0) {
 		return (uint32_t)sizeof(int8_t);
 	}
@@ -72,8 +70,7 @@ static uint32_t nnlite_element_size(int type_size)
 	return (uint32_t)type_size;
 }
 
-static uint32_t nnlite_output_bytes(const mtb_ml_model_t *obj)
-{
+static uint32_t nnlite_output_bytes(const mtb_ml_model_t *obj) {
 	if (obj->output_size <= 0) {
 		return 0U;
 	}
@@ -81,13 +78,11 @@ static uint32_t nnlite_output_bytes(const mtb_ml_model_t *obj)
 	return (uint32_t)obj->output_size * nnlite_element_size(obj->output_type_size);
 }
 
-uint32_t nnlite_api_version(void)
-{
+uint32_t nnlite_api_version(void) {
 	return NNLITE_API_VERSION;
 }
 
-int nnlite_runtime_init(uint32_t irq_priority)
-{
+int nnlite_runtime_init(uint32_t irq_priority) {
 	if (nnlite_runtime_ready) {
 		return 0;
 	}
@@ -104,8 +99,7 @@ int nnlite_runtime_init(uint32_t irq_priority)
 }
 
 int nnlite_model_open(const void *model_bin, uint32_t model_size, uint32_t arena_size,
-		      nnlite_model_t *model)
-{
+					  nnlite_model_t *model) {
 	struct nnlite_model_slot *slot = NULL;
 	uintptr_t index;
 	int ret;
@@ -156,8 +150,7 @@ int nnlite_model_open(const void *model_bin, uint32_t model_size, uint32_t arena
 	return 0;
 }
 
-int nnlite_model_get_info(nnlite_model_t model, struct nnlite_model_info *info)
-{
+int nnlite_model_get_info(nnlite_model_t model, struct nnlite_model_info *info) {
 	const struct nnlite_model_slot *slot = nnlite_slot_from_handle(model);
 
 	if (slot == NULL) {
@@ -181,8 +174,7 @@ int nnlite_model_get_info(nnlite_model_t model, struct nnlite_model_info *info)
 	return 0;
 }
 
-int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint32_t output_bytes)
-{
+int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint32_t output_bytes) {
 	struct nnlite_model_slot *slot = nnlite_slot_from_handle(model);
 
 	if (slot == NULL) {
@@ -199,8 +191,7 @@ int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint
 
 	/* Cast away const: the middleware copies the input into its own tensor
 	 * but takes a non-const pointer. */
-	if (mtb_ml_model_run(slot->obj, (MTB_ML_DATA_T *)(uintptr_t)input) !=
-	    MTB_ML_RESULT_SUCCESS) {
+	if (mtb_ml_model_run(slot->obj, (MTB_ML_DATA_T *)(uintptr_t)input) != MTB_ML_RESULT_SUCCESS) {
 		return -EIO;
 	}
 
@@ -211,8 +202,7 @@ int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint
 	return 0;
 }
 
-int nnlite_model_close(nnlite_model_t model)
-{
+int nnlite_model_close(nnlite_model_t model) {
 	struct nnlite_model_slot *slot = nnlite_slot_from_handle(model);
 
 	if (slot == NULL) {

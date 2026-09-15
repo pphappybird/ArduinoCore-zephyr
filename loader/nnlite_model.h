@@ -90,7 +90,7 @@ int nnlite_runtime_init(uint32_t irq_priority);
  * @return 0 on success, negative errno-style value on failure.
  */
 int nnlite_model_open(const void *model_bin, uint32_t model_size, uint32_t arena_size,
-		      nnlite_model_t *model);
+					  nnlite_model_t *model);
 
 /**
  * @brief Reports the tensor shapes and quantization parameters of a model.
