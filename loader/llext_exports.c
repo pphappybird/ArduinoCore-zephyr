@@ -21,8 +21,9 @@
 #include <mbedtls/memory_buffer_alloc.h>
 #include <mbedtls/debug.h>
 #endif
-/* #include "nnlite_hello_world.h" */
-#include "nnlite_micro_speech.h"
+#if defined(CONFIG_ML_MIDDLEWARE_NNLITE)
+#include "nnlite_model.h"
+#endif
 
 #define FORCE_EXPORT_SYM(name)                                                                     \
 	extern void name(void);                                                                        \
@@ -163,15 +164,16 @@ EXPORT_SYMBOL(k_sys_work_q);
 EXPORT_SYMBOL(k_mem_slab_init);
 EXPORT_SYMBOL(k_mem_slab_free);
 
-/*
- * NNLite (Infineon ML Middleware) hello_world backend - see nnlite_hello_world.c
- * EXPORT_SYMBOL(nnlite_hello_world_init);
- * EXPORT_SYMBOL(nnlite_hello_world_infer);
- */
-
-/* NNLite (Infineon ML Middleware) micro_speech backend - see nnlite_micro_speech.c */
-EXPORT_SYMBOL(nnlite_micro_speech_init);
-EXPORT_SYMBOL(nnlite_micro_speech_infer);
+#if defined(CONFIG_ML_MIDDLEWARE_NNLITE)
+/* Model-agnostic NNLite inference service - see nnlite_model.c. The model
+ * flatbuffer and any model-specific code stay in the sketch. */
+EXPORT_SYMBOL(nnlite_api_version);
+EXPORT_SYMBOL(nnlite_runtime_init);
+EXPORT_SYMBOL(nnlite_model_open);
+EXPORT_SYMBOL(nnlite_model_get_info);
+EXPORT_SYMBOL(nnlite_model_run);
+EXPORT_SYMBOL(nnlite_model_close);
+#endif
 
 #if defined(CONFIG_PINCTRL)
 EXPORT_SYMBOL(pinctrl_lookup_state);
