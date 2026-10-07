@@ -1,0 +1,47 @@
+From 3f8f67de3f3b2c1a0d9e8f7c6b5a493827161514 Mon Sep 17 00:00:00 2001
+From: Arduino PSoC Edge BSP contributors
+Date: Wed, 9 Sep 2026 00:00:00 +0000
+Subject: [PATCH] hal: infineon: select available PSE84 QSPI flash config
+
+The current Infineon HAL provides board-specific QSPI flash configuration
+sources instead of the former generic source name. Select the source from
+the flash compatible when available, while retaining compatibility with the
+Arduino PSE84 DTS and older HAL revisions.
+
+Signed-off-by: Arduino PSoC Edge BSP contributors
+
+diff --git a/modules/hal_infineon/zephyr-ifx-cycfg/CMakeLists.txt b/modules/hal_infineon/zephyr-ifx-cycfg/CMakeLists.txt
+--- a/modules/hal_infineon/zephyr-ifx-cycfg/CMakeLists.txt
++++ b/modules/hal_infineon/zephyr-ifx-cycfg/CMakeLists.txt
+@@ -9,8 +9,30 @@ if(CONFIG_SOC_FAMILY_INFINEON_EDGE)
+ 
+   zephyr_include_directories(${zephyr_ifx_cycfg_dir})
+   zephyr_include_directories(${zephyr_ifx_cycfg_dir}/device_headers)
+-  zephyr_library_sources(${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot.c)
++
++  dt_comp_path(flash_s25fs128s_path
++    COMPATIBLE "infineon,s25fs128s" INDEX 0)
++  dt_comp_path(flash_s25hs512t_path
++    COMPATIBLE "infineon,s25hs512t" INDEX 0)
++
++  if(DEFINED flash_s25fs128s_path AND
++     EXISTS ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25fs128s.c)
++    zephyr_library_sources(
++      ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25fs128s.c)
++  elseif(DEFINED flash_s25hs512t_path AND
++         EXISTS ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25hs512t.c)
++    zephyr_library_sources(
++      ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25hs512t.c)
++  elseif(EXISTS ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25fs128s.c)
++    zephyr_library_sources(
++      ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot_s25fs128s.c)
++  elseif(EXISTS ${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot.c)
++    zephyr_library_sources(${zephyr_ifx_cycfg_dir}/cycfg_qspi_memslot.c)
++  else()
++    message(FATAL_ERROR "No supported PSE84 QSPI flash configuration found.")
++  endif()
++
+   zephyr_library_sources(${zephyr_ifx_cycfg_dir}/ifx_cycfg_init.c)
+   zephyr_library_sources_ifdef(CONFIG_USE_INFINEON_AUTANALOG_SAR_ADC
+     ${zephyr_ifx_cycfg_dir}/ifx_autanalog.c)
+ endif()
