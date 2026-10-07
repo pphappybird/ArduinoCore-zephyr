@@ -1,0 +1,25 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* The server has no console; leave all shared peripherals to the CM33. */
+
+&uart2 {
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
+};
+
+&watchdog0 {
+	status = "disabled";
+};
+
+&peri0_group1_16bit_0 {
+	status = "disabled";
+};
+
+&peri0_group1_16_5bit_0 {
+	status = "disabled";
+};
