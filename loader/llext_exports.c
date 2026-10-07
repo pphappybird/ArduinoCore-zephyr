@@ -24,6 +24,9 @@
 #if defined(CONFIG_ML_MIDDLEWARE_NNLITE)
 #include "nnlite_model.h"
 #endif
+#if defined(CONFIG_ARDUINO_ETHOSU_REMOTE)
+#include "ethosu_model.h"
+#endif
 
 #define FORCE_EXPORT_SYM(name)                                                                     \
 	extern void name(void);                                                                        \
@@ -171,8 +174,30 @@ EXPORT_SYMBOL(nnlite_api_version);
 EXPORT_SYMBOL(nnlite_runtime_init);
 EXPORT_SYMBOL(nnlite_model_open);
 EXPORT_SYMBOL(nnlite_model_get_info);
+EXPORT_SYMBOL(nnlite_model_get_profile);
 EXPORT_SYMBOL(nnlite_model_run);
 EXPORT_SYMBOL(nnlite_model_close);
+#endif
+
+#if defined(CONFIG_ARDUINO_ETHOSU_REMOTE)
+/* Ethos-U55 inference service forwarded to the CM55 - see ethosu_model.c. */
+EXPORT_SYMBOL(ethosu_api_version);
+EXPORT_SYMBOL(ethosu_runtime_init);
+EXPORT_SYMBOL(ethosu_model_open);
+EXPORT_SYMBOL(ethosu_model_get_info);
+EXPORT_SYMBOL(ethosu_model_get_profile);
+EXPORT_SYMBOL(ethosu_model_run);
+EXPORT_SYMBOL(ethosu_model_close);
+#if defined(CONFIG_ARDUINO_ETHOSU_NNLITE_ABI)
+/* Same ABI under the NNLite names, so NNLite sketches run unchanged. */
+EXPORT_SYMBOL_NAMED(ethosu_api_version, nnlite_api_version);
+EXPORT_SYMBOL_NAMED(ethosu_runtime_init, nnlite_runtime_init);
+EXPORT_SYMBOL_NAMED(ethosu_model_open, nnlite_model_open);
+EXPORT_SYMBOL_NAMED(ethosu_model_get_info, nnlite_model_get_info);
+EXPORT_SYMBOL_NAMED(ethosu_model_get_profile, nnlite_model_get_profile);
+EXPORT_SYMBOL_NAMED(ethosu_model_run, nnlite_model_run);
+EXPORT_SYMBOL_NAMED(ethosu_model_close, nnlite_model_close);
+#endif
 #endif
 
 #if defined(CONFIG_PINCTRL)

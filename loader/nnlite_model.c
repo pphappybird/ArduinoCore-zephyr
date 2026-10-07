@@ -24,6 +24,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <zephyr/kernel.h>
+
 #include "mtb_ml.h"
 
 /** NPU IRQ priority used when nnlite_model_open() has to bring the runtime up
@@ -77,6 +79,19 @@ static uint32_t nnlite_output_bytes(const mtb_ml_model_t *obj) {
 
 	return (uint32_t)obj->output_size * nnlite_element_size(obj->output_type_size);
 }
+
+#if defined(CONFIG_NNLITE_PROFILE_DEBUG)
+/** Supplies the timestamp source required by ML Middleware profiling. */
+int mtb_ml_model_profile_get_tsc(uint64_t *value)
+{
+	if (value == NULL) {
+		return -EINVAL;
+	}
+
+	*value = k_cycle_get_64();
+	return 0;
+}
+#endif
 
 uint32_t nnlite_api_version(void) {
 	return NNLITE_API_VERSION;
@@ -144,6 +159,15 @@ int nnlite_model_open(const void *model_bin, uint32_t model_size, uint32_t arena
 		return -ENODEV;
 	}
 
+#if defined(CONFIG_NNLITE_PROFILE_DEBUG)
+	if (mtb_ml_model_profile_config(slot->obj, MTB_ML_PROFILE_ENABLE_MODEL) !=
+	    MTB_ML_RESULT_SUCCESS) {
+		(void)mtb_ml_model_deinit(slot->obj);
+		slot->obj = NULL;
+		return -EIO;
+	}
+#endif
+
 	slot->in_use = true;
 	*model = (nnlite_model_t)(index + 1U);
 
@@ -174,8 +198,32 @@ int nnlite_model_get_info(nnlite_model_t model, struct nnlite_model_info *info) 
 	return 0;
 }
 
+int nnlite_model_get_profile(nnlite_model_t model, struct nnlite_model_profile *profile) {
+	const struct nnlite_model_slot *slot = nnlite_slot_from_handle(model);
+
+	if (slot == NULL) {
+		return -ENODEV;
+	}
+
+	if ((profile == NULL) ||
+	    (profile->struct_size != (uint32_t)sizeof(*profile))) {
+		return -EINVAL;
+	}
+
+#if defined(CONFIG_NNLITE_PROFILE_DEBUG)
+	profile->npu_cycles = slot->obj->m_npu_cycles;
+	profile->cpu_cycles = slot->obj->m_cpu_cycles;
+	profile->completed_frames = slot->obj->m_sum_frames;
+	profile->library_error = (int32_t)slot->obj->lib_error;
+	return 0;
+#else
+	return -ENOTSUP;
+#endif
+}
+
 int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint32_t output_bytes) {
 	struct nnlite_model_slot *slot = nnlite_slot_from_handle(model);
+	cy_rslt_t result;
 
 	if (slot == NULL) {
 		return -ENODEV;
@@ -189,14 +237,19 @@ int nnlite_model_run(nnlite_model_t model, const void *input, void *output, uint
 		return -ENOBUFS;
 	}
 
-	/* Cast away const: the middleware copies the input into its own tensor
-	 * but takes a non-const pointer. */
-	if (mtb_ml_model_run(slot->obj, (MTB_ML_DATA_T *)(uintptr_t)input) != MTB_ML_RESULT_SUCCESS) {
-		return -EIO;
+	/* The middleware copies the input into its own tensor. */
+	result = mtb_ml_model_inputs(slot->obj, (MTB_ML_DATA_T *)(uintptr_t)input, 0);
+
+	if (result == MTB_ML_RESULT_SUCCESS) {
+		result = mtb_ml_model_invoke(slot->obj);
 	}
 
-	if ((output != NULL) && (output_bytes != 0U)) {
+	if ((result == MTB_ML_RESULT_SUCCESS) && (output != NULL) && (output_bytes != 0U)) {
 		(void)memcpy(output, slot->obj->output, (size_t)output_bytes);
+	}
+
+	if (result != MTB_ML_RESULT_SUCCESS) {
+		return -EIO;
 	}
 
 	return 0;

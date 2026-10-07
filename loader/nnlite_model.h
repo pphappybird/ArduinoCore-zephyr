@@ -58,6 +58,20 @@ struct nnlite_model_info {
 	uint32_t arena_used_bytes;
 };
 
+/** Temporary profiling values returned by nnlite_model_get_profile(). */
+struct nnlite_model_profile {
+	/** Must be set by the caller to sizeof(struct nnlite_model_profile). */
+	uint32_t struct_size;
+	/** NNLite accelerator cycles for the most recent successful run. */
+	uint64_t npu_cycles;
+	/** CPU cycles measured by the middleware for the most recent run. */
+	uint64_t cpu_cycles;
+	/** Number of successfully profiled model invocations. */
+	uint32_t completed_frames;
+	/** Last middleware library error code. */
+	int32_t library_error;
+};
+
 /**
  * @brief Returns NNLITE_API_VERSION of the running loader, so a sketch can
  *        detect a loader/sketch mismatch before calling anything else.
@@ -101,6 +115,13 @@ int nnlite_model_open(const void *model_bin, uint32_t model_size, uint32_t arena
  * @return 0 on success, negative errno-style value on failure.
  */
 int nnlite_model_get_info(nnlite_model_t model, struct nnlite_model_info *info);
+
+/**
+ * @brief Reads the latest temporary ML Middleware profiling values.
+ *
+ * @return 0 on success, -ENOTSUP when profiling is disabled in the loader.
+ */
+int nnlite_model_get_profile(nnlite_model_t model, struct nnlite_model_profile *profile);
 
 /**
  * @brief Runs one inference on the NNLite NPU.

@@ -20,3 +20,46 @@ config MAIN_STACK_REGION
 	depends on CODE_DATA_RELOCATION
 	help
 	  Specify the memory region for main stack.
+
+config NNLITE_PROFILE_DEBUG
+	bool "Enable temporary NNLite cycle profiling"
+	depends on ML_MIDDLEWARE_NNLITE
+	default n
+	help
+	  Enables the ML Middleware model profiler so the NNLite cycle counters
+	  can be read through the temporary profiling API.
+
+config ARDUINO_ETHOSU_REMOTE
+	bool "Ethos-U55 inference through the CM55 server"
+	depends on SOC_SERIES_PSE84 && CPU_CORTEX_M33 && TRUSTED_EXECUTION_SECURE
+	default n
+	help
+	  Boots the CM55 from the loader and exports the ethosu_model_* API,
+	  which forwards inference requests to the Ethos-U55 server image
+	  flashed at ARDUINO_ETHOSU_M55_VTOR.
+
+if ARDUINO_ETHOSU_REMOTE
+
+config ARDUINO_ETHOSU_M55_VTOR
+	hex "CM55 server vector table address"
+	default 0x60500000
+
+config ARDUINO_ETHOSU_TIMEOUT_MS
+	int "Timeout for CM55 boot and each request, in ms"
+	default 2000
+
+config ARDUINO_ETHOSU_PPC_ALL_NS
+	bool "Make the whole peripheral space non-secure"
+	default n
+	help
+	  Fallback to the upstream PSE84 behaviour instead of opening only the
+	  U55 PPC regions to the CM55.
+
+config ARDUINO_ETHOSU_NNLITE_ABI
+	bool "Export the Ethos-U55 API under the nnlite_* names"
+	depends on !ML_MIDDLEWARE_NNLITE
+	default n
+	help
+	  Lets unchanged NNLite sketches run on the Ethos-U55.
+
+endif # ARDUINO_ETHOSU_REMOTE
