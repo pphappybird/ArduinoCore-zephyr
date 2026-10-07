@@ -4,6 +4,12 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
+# Register nested Infineon ML Zephyr modules before Zephyr discovery.
+list(APPEND ZEPHYR_EXTRA_MODULES
+    "$ENV{ZEPHYR_BASE}/../modules/hal/infineon/ml-middleware"
+    "$ENV{ZEPHYR_BASE}/../modules/hal/infineon/ml-tflite-micro"
+)
+
 # get value of NORMALIZED_BOARD_TARGET early
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE} COMPONENTS yaml boards)
 
@@ -16,6 +22,11 @@ list(APPEND DTS_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
 project(app LANGUAGES C CXX)
+
+# PSE84 NNLite uses DW0 channel 1; PDM occupies channel 0.
+if(CONFIG_ML_MIDDLEWARE_NNLITE AND CONFIG_BOARD_KIT_PSE84_AI_PSE846GPS2DBZC4A_M33)
+    zephyr_compile_definitions(NNLITE_DMA_CHAN=1)
+endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/blobs)
 add_subdirectory_ifdef(CONFIG_OTA ${CMAKE_CURRENT_SOURCE_DIR}/ota)

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 #include <zephyr/kernel.h>
 #include <time.h>
 #include <sys/time.h>
@@ -21,6 +22,12 @@
 #if defined(CONFIG_MBEDTLS)
 #include <mbedtls/memory_buffer_alloc.h>
 #include <mbedtls/debug.h>
+#endif
+#if defined(CONFIG_ML_MIDDLEWARE_NNLITE)
+#include "nnlite_model.h"
+#endif
+#if defined(CONFIG_ARDUINO_ETHOSU_REMOTE)
+#include "ethosu_model.h"
 #endif
 
 #include "../cores/arduino/zephyr_sketch_header.h"
@@ -150,6 +157,39 @@ EXPORT_SYMBOL(k_sys_work_q);
 EXPORT_SYMBOL(k_mem_slab_init);
 EXPORT_SYMBOL(k_mem_slab_free);
 EXPORT_SYMBOL(k_mem_slab_alloc);
+
+#if defined(CONFIG_ML_MIDDLEWARE_NNLITE)
+/* Model-agnostic NNLite inference service - see nnlite_model.c. The model
+ * flatbuffer and any model-specific code stay in the sketch. */
+EXPORT_SYMBOL(nnlite_api_version);
+EXPORT_SYMBOL(nnlite_runtime_init);
+EXPORT_SYMBOL(nnlite_model_open);
+EXPORT_SYMBOL(nnlite_model_get_info);
+EXPORT_SYMBOL(nnlite_model_get_profile);
+EXPORT_SYMBOL(nnlite_model_run);
+EXPORT_SYMBOL(nnlite_model_close);
+#endif
+
+#if defined(CONFIG_ARDUINO_ETHOSU_REMOTE)
+/* Ethos-U55 inference service forwarded to the CM55 - see ethosu_model.c. */
+EXPORT_SYMBOL(ethosu_api_version);
+EXPORT_SYMBOL(ethosu_runtime_init);
+EXPORT_SYMBOL(ethosu_model_open);
+EXPORT_SYMBOL(ethosu_model_get_info);
+EXPORT_SYMBOL(ethosu_model_get_profile);
+EXPORT_SYMBOL(ethosu_model_run);
+EXPORT_SYMBOL(ethosu_model_close);
+#if defined(CONFIG_ARDUINO_ETHOSU_NNLITE_ABI)
+/* Same ABI under the NNLite names, so NNLite sketches run unchanged. */
+EXPORT_SYMBOL_NAMED(ethosu_api_version, nnlite_api_version);
+EXPORT_SYMBOL_NAMED(ethosu_runtime_init, nnlite_runtime_init);
+EXPORT_SYMBOL_NAMED(ethosu_model_open, nnlite_model_open);
+EXPORT_SYMBOL_NAMED(ethosu_model_get_info, nnlite_model_get_info);
+EXPORT_SYMBOL_NAMED(ethosu_model_get_profile, nnlite_model_get_profile);
+EXPORT_SYMBOL_NAMED(ethosu_model_run, nnlite_model_run);
+EXPORT_SYMBOL_NAMED(ethosu_model_close, nnlite_model_close);
+#endif
+#endif
 
 #if defined(CONFIG_PINCTRL)
 EXPORT_SYMBOL(pinctrl_lookup_state);
