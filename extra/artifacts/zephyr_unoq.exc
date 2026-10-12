@@ -6,6 +6,7 @@
 
 libraries/Camera/
 libraries/Ethernet/
+libraries/PDM/
 libraries/Storage/
 libraries/WiFi/
 libraries/Zephyr_SDRAM/
