@@ -64,6 +64,7 @@ west config manifest.project-filter -- "$HAL_FILTER"
 west update $WEST_MODULES_CACHE "$@"
 bash ./extra/apply_zephyr_patches.sh
 pip3 install -r ../zephyr/scripts/requirements-base.txt
+pip3 install cryptography cbor2 click intelhex
 west zephyr-export
 log_msg "endgroup"
 
