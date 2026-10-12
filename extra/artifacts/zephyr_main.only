@@ -5,4 +5,3 @@
 # excluded by all other artifacts.
 
 libraries/OTA/
-libraries/PDM/
