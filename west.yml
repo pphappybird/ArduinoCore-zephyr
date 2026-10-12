@@ -56,6 +56,16 @@ manifest:
       # verified against the Zephyr revision above.
       revision: cf24edd66ab173d20f734e3f3350b1a1c053a904
 
+    # hal_infineon must stay before the ML modules: they are cloned into
+    # subdirectories of its path.
+    - name: hal_infineon
+      remote: infineon-github
+      repo-path: ifx-zephyr-hal_infineon
+      revision: master
+      path: modules/hal/infineon
+      groups:
+        - hal
+
     - name: mtb-ml-middleware
       remote: infineon-github
       repo-path: ml-middleware
@@ -67,11 +77,3 @@ manifest:
       repo-path: ml-tflite-micro
       revision: release-v3.2.0
       path: modules/hal/infineon/ml-tflite-micro/mtb-ml-tflite-micro
-
-    - name: hal_infineon
-      remote: infineon-github
-      repo-path: ifx-zephyr-hal_infineon
-      revision: master
-      path: modules/hal/infineon
-      groups:
-        - hal
