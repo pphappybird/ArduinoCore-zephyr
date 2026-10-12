@@ -76,10 +76,10 @@ jobs:
           TEMPLATE_GROUPS=$(basename -a package/package_infineon_*_index.template.json 2>/dev/null \
             | sed -e 's/^package_infineon_//' -e 's/_index\.template\.json$//' \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          GROUPS=$(jq -c -n --argjson boards "$BOARD_GROUPS" --argjson templates "$TEMPLATE_GROUPS" \
+          RELEASE_GROUPS=$(jq -c -n --argjson boards "$BOARD_GROUPS" --argjson templates "$TEMPLATE_GROUPS" \
             '[$boards[] | select(. as $g | $templates | index($g))]')
-          echo "groups=${GROUPS}" >> "$GITHUB_OUTPUT"
-          echo "Discovered release groups: ${GROUPS}"
+          echo "groups=${RELEASE_GROUPS}" >> "$GITHUB_OUTPUT"
+          echo "Discovered release groups: ${RELEASE_GROUPS}"
 
   resolve-release:
     name: Resolve release tag and build run
