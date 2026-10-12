@@ -126,7 +126,12 @@ static int pdm_configure(int channels, int sampleRate) {
 
 	if (channels == 1) {
 		cfg.channel.req_num_chan = 1;
+#if PDM_IS_INFINEON
+		/* Onboard mic data line: hardware channel 3 = 2 * ctl_idx(1) + RIGHT */
+		cfg.channel.req_chan_map_lo = dmic_build_channel_map(0, 1, PDM_CHAN_RIGHT);
+#else
 		cfg.channel.req_chan_map_lo = dmic_build_channel_map(0, 0, PDM_CHAN_LEFT);
+#endif
 		cfg.streams[0].pcm_rate = sampleRate;
 		cfg.streams[0].block_size = SLAB_BLOCK_SIZE;
 	} else {
@@ -253,6 +258,10 @@ int PDMClass::begin(int channels, int sampleRate) {
 		if (pdm_configure(channels, sampleRate) < 0) {
 			return 0;
 		}
+		/* start the microphone before the thread: dmic_read() fails fast until ACTIVE */
+		if (pdm_start() < 0) {
+			return 0;
+		}
 		/* start or resume receiving thread */
 		static bool thread_started = false;
 		if (!thread_started) {
@@ -262,10 +271,6 @@ int PDMClass::begin(int channels, int sampleRate) {
 		} else {
 			// Subsequent boots: just resume it
 			k_thread_resume(pdm_tid);
-		}
-		/* start the microphone */
-		if (pdm_start() < 0) {
-			return 0;
 		}
 		/* Set the status as ACTIVE */
 		active = true;
