@@ -249,6 +249,50 @@ spi1: &scb10 {
 	drive-push-pull;
 };
 
+/* PDM microphone: dmic0 on P8_5 (CLK) / P8_6 (DATA) */
+&clk_hf7 {
+	status = "okay";
+	source-path = <IFX_CLK_HF_IN_CLKPATH3>;
+};
+
+&peri1_group1_16_5bit_2 {
+	status = "okay";
+	clock-div = <2>;
+	div-frac-value = <7>;
+};
+
+&dma0 {
+	status = "okay";
+};
+
+dmic_dev: &dmic0 {
+	status = "okay";
+	clocks = <&peri1_group1_16_5bit_2>;
+	dmas = <&dma0 0>;
+	dma-names = "rx";
+	pinctrl-0 = <&p8_5_pdm3_pdm_clk &p8_6_pdm3_pdm_data>;
+	pinctrl-names = "default";
+};
+
+&dmic0_ch2 {
+	status = "okay";
+	use-alt-io;
+};
+
+&dmic0_ch3 {
+	status = "okay";
+};
+
+&p8_5_pdm3_pdm_clk {
+	drive-strength = "half";
+	drive-push-pull;
+};
+
+&p8_6_pdm3_pdm_data {
+	drive-strength = "half";
+	input-enable;
+};
+
 /* ------------------------------------------------------------------ */
 /* Arduino 'zephyr,user' node                                         */
 /*                                                                    */
