@@ -65,6 +65,7 @@ west update $WEST_MODULES_CACHE "$@"
 bash ./extra/apply_zephyr_patches.sh
 west zephyr-export
 pip3 install -r ../zephyr/scripts/requirements-base.txt
+pip3 install cryptography cbor2 click intelhex
 log_msg "endgroup"
 
 TOOLCHAIN_VERSIONS=$(for tc in $NEEDED_TOOLCHAINS; do
