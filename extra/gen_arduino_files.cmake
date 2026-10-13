@@ -48,6 +48,9 @@ foreach(variant ${VARIANTS})
 	# exclude other problematic macros shared between C and C++
 	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "-fdiagnostics-color=always")
 
+	# keep MicroPrintf output in sketches (Arduino_TensorFlowLite provides micro_log.cpp)
+	list(FILTER LLEXT_BASE_CFLAGS EXCLUDE REGEX "^-DTF_LITE_STRIP_ERROR_STRINGS")
+
 	# get machine flags (-msomething) in a separate list
 	set(LLEXT_MACHINE_FLAGS ${LLEXT_BASE_CFLAGS})
 	list(FILTER LLEXT_MACHINE_FLAGS INCLUDE REGEX "^-m[a-zA-Z]")
