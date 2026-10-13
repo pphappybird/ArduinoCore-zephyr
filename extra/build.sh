@@ -138,7 +138,8 @@ rm -f firmwares/zephyr-$variant.companion.hex
 if [ -n "${companion_target:-}" ] && [ -n "${companion_app:-}" ]; then
     COMPANION_BUILD_DIR=build/${variant}_companion
     rm -rf ${COMPANION_BUILD_DIR}
-    west build -d ${COMPANION_BUILD_DIR} -b ${companion_target} --no-sysbuild ${companion_app} 1>&2
+    # Keep its memory table out of the loader report parsed by CI
+    west build -d ${COMPANION_BUILD_DIR} -b ${companion_target} --no-sysbuild ${companion_app} > ${COMPANION_BUILD_DIR}.log 2>&1 || { cat ${COMPANION_BUILD_DIR}.log; exit 1; }
     cp ${COMPANION_BUILD_DIR}/zephyr/zephyr.hex firmwares/zephyr-$variant.companion.hex
 fi
 
