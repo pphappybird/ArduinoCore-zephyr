@@ -59,6 +59,8 @@ done < <(sed -n 's/^\([^.#[:space:]]*\)\.build\.variant=.*/\1/p' "$CORE_DIR/boar
 
 for variant_dir in "$CORE_DIR"/variants/*/; do
 	variant_name=$(basename "$variant_dir")
+	# keep shared dirs (_ldscripts, common)
+	[[ "$variant_name" == _* || "$variant_name" == common ]] && continue
 	is_group_variant "$variant_name" || rm -rf "$variant_dir"
 done
 
