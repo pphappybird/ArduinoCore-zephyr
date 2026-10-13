@@ -61,7 +61,8 @@ manifest:
     - name: hal_infineon
       remote: infineon-github
       repo-path: ifx-zephyr-hal_infineon
-      revision: master
+      # Pinned: extra/patches/hal_infineon is generated against this commit.
+      revision: bed4cee5aa5602cb23e7f6c3c94f3bab5ecbe186
       path: modules/hal/infineon
       groups:
         - hal

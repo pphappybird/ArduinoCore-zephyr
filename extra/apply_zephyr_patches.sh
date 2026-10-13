@@ -6,47 +6,53 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PATCH_DIR="$SCRIPT_DIR/patches/zephyr"
+PATCHES_ROOT="$SCRIPT_DIR/patches"
 
-if [ ! -d "$PATCH_DIR" ]; then
+# Applies every extra/patches/<west-project>/*.patch to the matching west project.
+if [ ! -d "$PATCHES_ROOT" ]; then
 	# No patch set is configured.
 	exit 0
 fi
 
 if ! command -v west >/dev/null 2>&1; then
-	echo "[ERROR] west is not available; cannot resolve Zephyr workspace"
+	echo "[ERROR] west is not available; cannot resolve west workspace"
 	exit 1
 fi
 
-ZEPHYR_BASE="$(west list -f '{abspath}' zephyr 2>/dev/null || true)"
-if [ -z "$ZEPHYR_BASE" ]; then
-	echo "[ERROR] Unable to locate Zephyr module with 'west list zephyr'"
-	exit 1
-fi
+for project_dir in "$PATCHES_ROOT"/*/; do
+	[ -d "$project_dir" ] || continue
+	project="$(basename "$project_dir")"
 
-if [ ! -d "$ZEPHYR_BASE/.git" ]; then
-	echo "[ERROR] Zephyr repository not found at '$ZEPHYR_BASE'"
-	exit 1
-fi
-
-applied_any=false
-for patch in "$PATCH_DIR"/*.patch; do
-	[ -e "$patch" ] || continue
-	patch_name="$(basename "$patch")"
-
-	if git -C "$ZEPHYR_BASE" apply --check "$patch" >/dev/null 2>&1; then
-		echo "[INFO] Applying Zephyr patch: $patch_name"
-		git -C "$ZEPHYR_BASE" apply "$patch"
-		applied_any=true
-	elif git -C "$ZEPHYR_BASE" apply --reverse --check "$patch" >/dev/null 2>&1; then
-		echo "[INFO] Zephyr patch already applied: $patch_name"
-	else
-		echo "[ERROR] Cannot apply Zephyr patch cleanly: $patch_name"
-		echo "[ERROR] Patch file: $patch"
+	project_path="$(west list -f '{abspath}' "$project" 2>/dev/null || true)"
+	if [ -z "$project_path" ]; then
+		echo "[ERROR] Unable to locate west project '$project' with 'west list $project'"
 		exit 1
 	fi
-done
 
-if [ "$applied_any" = true ]; then
-	echo "[INFO] Zephyr patch set applied"
-fi
+	if [ ! -d "$project_path/.git" ]; then
+		echo "[ERROR] Repository for '$project' not found at '$project_path'"
+		exit 1
+	fi
+
+	applied_any=false
+	for patch in "$project_dir"*.patch; do
+		[ -e "$patch" ] || continue
+		patch_name="$(basename "$patch")"
+
+		if git -C "$project_path" apply --check "$patch" >/dev/null 2>&1; then
+			echo "[INFO] Applying $project patch: $patch_name"
+			git -C "$project_path" apply "$patch"
+			applied_any=true
+		elif git -C "$project_path" apply --reverse --check "$patch" >/dev/null 2>&1; then
+			echo "[INFO] $project patch already applied: $patch_name"
+		else
+			echo "[ERROR] Cannot apply $project patch cleanly: $patch_name"
+			echo "[ERROR] Patch file: $patch"
+			exit 1
+		fi
+	done
+
+	if [ "$applied_any" = true ]; then
+		echo "[INFO] $project patch set applied"
+	fi
+done
