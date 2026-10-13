@@ -138,7 +138,7 @@ rm -f firmwares/zephyr-$variant.companion.hex
 if [ -n "${companion_target:-}" ] && [ -n "${companion_app:-}" ]; then
     COMPANION_BUILD_DIR=build/${variant}_companion
     rm -rf ${COMPANION_BUILD_DIR}
-    west build -d ${COMPANION_BUILD_DIR} -b ${companion_target} --no-sysbuild ${companion_app}
+    west build -d ${COMPANION_BUILD_DIR} -b ${companion_target} --no-sysbuild ${companion_app} 1>&2
     cp ${COMPANION_BUILD_DIR}/zephyr/zephyr.hex firmwares/zephyr-$variant.companion.hex
 fi
 
