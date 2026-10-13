@@ -1,0 +1,21 @@
+diff --git a/ml-middleware/zephyr/CMakeLists.txt b/ml-middleware/zephyr/CMakeLists.txt
+index 606a416..14d9132 100644
+--- a/ml-middleware/zephyr/CMakeLists.txt
++++ b/ml-middleware/zephyr/CMakeLists.txt
+@@ -82,6 +82,7 @@ if(CONFIG_ML_MIDDLEWARE_INFINEON)
+       ${DSL_PDL_DRV_DIR}/source/cy_dma.c)
+ 
+     zephyr_compile_definitions(COMPONENT_NNLITE2=1)
++    zephyr_compile_definitions(NNLITE_DMA_CHAN=1)  # keep DW0 channel 0 free for PDM
+   endif() # CONFIG_ML_MIDDLEWARE_NNLITE
+ 
+   # Define required ML middleware support macros
+@@ -185,7 +186,7 @@ if(CONFIG_ML_MIDDLEWARE_INFINEON)
+           COMPONENT_U55=1
+           ETHOSU55=1     # pmu_ethosu.h: selects U55 PMU event set
+           ETHOSU_ARCH=u55
+-          ETHOSU_MACS=256
++          ETHOSU_MACS=128  # PSE84 integrates the U55-128 configuration
+           ETHOSU         # required by ethosu_driver internal headers
+           ${_ETHOSU_SOC_UPPER}   # e.g. PSE846GPS2DBZC4A — satisfies cy_device_headers.h
+           ${_ETHOSU_CORE_DEFINES} # COMPONENT_CM55 + CORE_NAME_CM55_0 — fills IRQn_Type
