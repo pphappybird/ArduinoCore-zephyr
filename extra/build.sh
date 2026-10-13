@@ -52,6 +52,8 @@ if ! [ -z "$chosen_board" ]; then
 	arg_token='(?:[^\s"'\'']+|"[^"]*"|'\''[^'\'']*'\'')+'
 	mapfile -t args < <(jq -cr '.args' <<< "$chosen_board" | grep -oP "$arg_token")
 	upload_offset=$(jq -cr '.upload_offset' <<< "$chosen_board")
+	companion_target=$(jq -cr '.companion_target' <<< "$chosen_board")
+	companion_app=$(jq -cr '.companion_app' <<< "$chosen_board")
 
 	# Check for debug flag and append
 	if [ x$2 == x"--debug" ]; then
@@ -67,6 +69,8 @@ else
 	if [ ! -z "$chosen_board" ]; then
 		board=$(jq -cr '.board' <<< "$chosen_board")
 		upload_offset=$(jq -cr '.upload_offset' <<< "$chosen_board")
+		companion_target=$(jq -cr '.companion_target' <<< "$chosen_board")
+		companion_app=$(jq -cr '.companion_app' <<< "$chosen_board")
 	else
 		log_msg warning "No board for '$target' defined in 'boards.txt'. A proper definition is required to use the core."
 	fi
@@ -122,8 +126,21 @@ for ext in elf bin hex uf2; do
         cp ${BUILD_DIR}/zephyr/zephyr.$ext firmwares/zephyr-$variant.$ext
     fi
 done
+# Boards that sign the image (e.g. PSE84) must program the signed hex
+if [ -f ${BUILD_DIR}/zephyr/zephyr.signed.hex ]; then
+    cp ${BUILD_DIR}/zephyr/zephyr.signed.hex firmwares/zephyr-$variant.hex
+fi
 cp ${BUILD_DIR}/zephyr/zephyr.dts firmwares/zephyr-$variant.dts
 cp ${BUILD_DIR}/zephyr/.config firmwares/zephyr-$variant.config
+
+# Build the optional companion image (e.g. the PSE84 CM55 Ethos-U55 server)
+rm -f firmwares/zephyr-$variant.companion.hex
+if [ -n "${companion_target:-}" ] && [ -n "${companion_app:-}" ]; then
+    COMPANION_BUILD_DIR=build/${variant}_companion
+    rm -rf ${COMPANION_BUILD_DIR}
+    west build -d ${COMPANION_BUILD_DIR} -b ${companion_target} --no-sysbuild ${companion_app}
+    cp ${COMPANION_BUILD_DIR}/zephyr/zephyr.hex firmwares/zephyr-$variant.companion.hex
+fi
 
 # Generate the provides.ld file for linked builds
 echo "Generating exported symbol scripts"
