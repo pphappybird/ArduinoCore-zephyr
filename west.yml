@@ -51,16 +51,18 @@ manifest:
       url: https://github.com/CANnectivity/cannectivity.git
       revision: main
 
-    # hal_infineon must stay before the ML modules: they are cloned into
-    # subdirectories of its path.
-    - name: hal_infineon
+    # Infineon ML modules; cloned into hal_infineon (imported from Zephyr), which must stay first.
+    - name: ifx-ml-middleware
       remote: infineon-github
-      repo-path: ifx-zephyr-hal_infineon
-      # Pinned: extra/patches/hal_infineon is generated against this commit.
-      revision: bed4cee5aa5602cb23e7f6c3c94f3bab5ecbe186
-      path: modules/hal/infineon
-      groups:
-        - hal
+      repo-path: ifx-zephyr-lib
+      revision: 9b3b3694e95d447f099ba53298832ecfd9d4f5a3
+      path: modules/hal/infineon/ml-middleware
+
+    - name: ifx-ml-tflite-micro
+      remote: infineon-github
+      repo-path: ifx-zephyr-lib
+      revision: 8ffc980955b5dcb006c10fa01f5534eb4984e6fd
+      path: modules/hal/infineon/ml-tflite-micro
 
     - name: mtb-ml-middleware
       remote: infineon-github
@@ -73,3 +75,9 @@ manifest:
       repo-path: ml-tflite-micro
       revision: release-v3.2.0
       path: modules/hal/infineon/ml-tflite-micro/mtb-ml-tflite-micro
+
+    - name: mtb-dsl-pse8xxgp
+      remote: infineon-github
+      repo-path: mtb-dsl-pse8xxgp
+      revision: release-v1.2.0
+      path: modules/lib/mtb-dsl-pse8xxgp

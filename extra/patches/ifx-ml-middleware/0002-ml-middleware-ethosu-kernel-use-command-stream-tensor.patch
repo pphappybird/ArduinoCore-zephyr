@@ -1,7 +1,7 @@
-diff --git a/ml-middleware/zephyr/source/ethosu_tflm_kernel.cc b/ml-middleware/zephyr/source/ethosu_tflm_kernel.cc
+diff --git a/zephyr/source/ethosu_tflm_kernel.cc b/zephyr/source/ethosu_tflm_kernel.cc
 index 13e7171..2e89f90 100644
---- a/ml-middleware/zephyr/source/ethosu_tflm_kernel.cc
-+++ b/ml-middleware/zephyr/source/ethosu_tflm_kernel.cc
+--- a/zephyr/source/ethosu_tflm_kernel.cc
++++ b/zephyr/source/ethosu_tflm_kernel.cc
 @@ -73,28 +73,42 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
  }
  

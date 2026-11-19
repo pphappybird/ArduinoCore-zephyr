@@ -1,0 +1,30 @@
+diff --git a/zephyr/CMakeLists.txt b/zephyr/CMakeLists.txt
+index 13b7bda..5b49cda 100644
+--- a/zephyr/CMakeLists.txt
++++ b/zephyr/CMakeLists.txt
+@@ -55,7 +55,7 @@ if(CONFIG_ML_MIDDLEWARE_INFINEON)
+     # modules/hal/infineon/. Get the workspace root (parent of ZEPHYR_BASE)
+     # and construct absolute paths.
+     get_filename_component(WORKSPACE_ROOT "${ZEPHYR_BASE}" DIRECTORY)
+-    set(NNKERNEL_DIR ${WORKSPACE_ROOT}/modules/hal/infineon/mtb-dsl-pse8xxgp/nnkernel/COMPONENT_CM33)
++    set(NNKERNEL_DIR ${WORKSPACE_ROOT}/modules/lib/mtb-dsl-pse8xxgp/nnkernel/COMPONENT_CM33)
+     set(DSL_PDL_DRV_DIR ${WORKSPACE_ROOT}/modules/hal/infineon/mtb-dsl-pse8xxgp/pdl/drivers)
+ 
+     zephyr_include_directories(${NNKERNEL_DIR}/include)
+@@ -83,6 +83,7 @@ if(CONFIG_ML_MIDDLEWARE_INFINEON)
+       ${DSL_PDL_DRV_DIR}/source/cy_dma.c)
+ 
+     zephyr_compile_definitions(COMPONENT_NNLITE2=1)
++    zephyr_compile_definitions(NNLITE_DMA_CHAN=1)  # keep DW0 channel 0 free for PDM
+   endif() # CONFIG_ML_MIDDLEWARE_NNLITE
+ 
+   # Define required ML middleware support macros
+@@ -186,7 +187,7 @@ if(CONFIG_ML_MIDDLEWARE_INFINEON)
+           COMPONENT_U55=1
+           ETHOSU55=1     # pmu_ethosu.h: selects U55 PMU event set
+           ETHOSU_ARCH=u55
+-          ETHOSU_MACS=256
++          ETHOSU_MACS=128  # PSE84 integrates the U55-128 configuration
+           ETHOSU         # required by ethosu_driver internal headers
+           ${_ETHOSU_SOC_UPPER}   # e.g. PSE846GPS2DBZC4A — satisfies cy_device_headers.h
+           ${_ETHOSU_CORE_DEFINES} # COMPONENT_CM55 + CORE_NAME_CM55_0 — fills IRQn_Type
