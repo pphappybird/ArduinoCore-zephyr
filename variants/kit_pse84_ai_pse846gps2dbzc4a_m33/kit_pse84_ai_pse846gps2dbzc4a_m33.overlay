@@ -104,7 +104,7 @@ i2c0: &scb0 {
 	#size-cells = <0>;
 	clock-frequency = <100000>;
 
-	clocks = <&peri0_group1_16bit_1>;
+	clocks = <&peri0_group1_16bit_3>;
 
 	pinctrl-0 = <&p8_0_scb0_i2c_scl &p8_1_scb0_i2c_sda>;
 	pinctrl-names = "default";
@@ -125,11 +125,6 @@ i2c1: &scb5 {
 	pinctrl-names = "default";
 };
 
-
-&peri0_group1_16bit_1 {
-	status = "okay";
-	clock-div = <63>;
-};
 
 &peri0_group1_16bit_3 {
 	status = "okay";
@@ -164,7 +159,7 @@ i2c1: &scb5 {
 	#size-cells = <0>;
 	clock-frequency = <100000>;
 
-	clocks = <&peri0_group1_16bit_1>;
+	clocks = <&peri0_group1_16bit_3>;
 
 	pinctrl-0 = <&p17_2_scb11_i2c_scl &p17_3_scb11_i2c_sda>;
 	pinctrl-names = "default";
