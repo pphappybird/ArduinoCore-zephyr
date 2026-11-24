@@ -142,10 +142,43 @@ static int ethosu_ppc_open_u55(void) {
 }
 #endif
 
-/** Programs a free SAU region as non-secure for [base, limit). */
+/** True if an enabled non-secure SAU region already covers [base, limit). */
+static bool ethosu_sau_covers_ns(uint32_t base, uint32_t limit) {
+	uint32_t count = (SAU->TYPE & SAU_TYPE_SREGION_Msk) >> SAU_TYPE_SREGION_Pos;
+	uint32_t idx;
+
+	for (idx = 0U; idx < count; idx++) {
+		uint32_t rlar;
+		uint32_t start;
+		uint32_t end;
+
+		SAU->RNR = idx;
+		rlar = SAU->RLAR;
+
+		if (((rlar & SAU_RLAR_ENABLE_Msk) == 0U) || ((rlar & SAU_RLAR_NSC_Msk) != 0U)) {
+			continue;
+		}
+
+		start = SAU->RBAR & SAU_RBAR_BADDR_Msk;
+		end = (rlar & SAU_RLAR_LADDR_Msk) | (ETHOSU_SAU_GRANULE - 1UL);
+
+		if ((start <= base) && (end >= (limit - 1UL))) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/** Programs a free SAU region as non-secure for [base, limit); overlapping
+ *  SAU regions would make the range secure, so covered ranges are skipped. */
 static int ethosu_sau_add_ns(uint32_t base, uint32_t limit) {
 	uint32_t count = (SAU->TYPE & SAU_TYPE_SREGION_Msk) >> SAU_TYPE_SREGION_Pos;
 	uint32_t idx;
+
+	if (ethosu_sau_covers_ns(base, limit)) {
+		return 0;
+	}
 
 	for (idx = 0U; idx < count; idx++) {
 		SAU->RNR = idx;
