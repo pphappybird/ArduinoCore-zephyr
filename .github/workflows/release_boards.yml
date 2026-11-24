@@ -225,7 +225,7 @@ jobs:
             exit 1
           fi
 
-          TAR_FILE=$(find release-assets -maxdepth 1 -name "ArduinoCore-${ARTIFACT}-*.tar.bz2" -print -quit)
+          TAR_FILE=$(find release-assets -maxdepth 1 \( -name "ArduinoCore-${ARTIFACT}-*.tar.zst" -o -name "ArduinoCore-${ARTIFACT}-*.tar.bz2" \) -print -quit)
           if [ -z "${TAR_FILE}" ]; then
             echo "Downloaded artifact does not contain expected tarball" >&2
             exit 1
