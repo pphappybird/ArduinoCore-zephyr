@@ -47,11 +47,8 @@
 #if !defined(CONFIG_ARDUINO_ETHOSU_PPC_ALL_NS)
 /** U55 peripheral regions opened to the non-secure CM55. */
 static const cy_en_prot_region_t ethosu_ppc_regions[] = {
-	PROT_PERI1_U550_U55,
-	PROT_PERI1_U550_ROT,
-	PROT_PERI1_U550_ACG,
-	PROT_PERI1_U550_MXU55_PPU_PPU,
-	PROT_PERI1_U550_PD_PD,
+	PROT_PERI1_U550_U55,           PROT_PERI1_U550_ROT,   PROT_PERI1_U550_ACG,
+	PROT_PERI1_U550_MXU55_PPU_PPU, PROT_PERI1_U550_PD_PD,
 };
 #endif
 
@@ -80,7 +77,7 @@ static int ethosu_mpc_apply_domain(uint32_t domain_idx) {
 
 		for (cfg_idx = 0U; cfg_idx < domain->cfg_count; cfg_idx++) {
 			if (Cy_Mpc_ConfigRotMpcStruct(region->base, region->offset, region->size,
-						      &domain->cfg[cfg_idx]) != CY_RSLT_SUCCESS) {
+										  &domain->cfg[cfg_idx]) != CY_RSLT_SUCCESS) {
 				return -EIO;
 			}
 		}
@@ -108,10 +105,10 @@ static int ethosu_mpc_init(void) {
 /** Same steps as Cy_SysU55Enable(), which PDL only builds for the CM55. */
 static int ethosu_u55_power_on(void) {
 	Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_MXU550_PERI_NR, CY_MMIO_MXU550_GROUP_NR,
-				     CY_MMIO_MXU550_SLAVE_NR, CY_MMIO_MXU550_CLK_HF_NR);
+								 CY_MMIO_MXU550_SLAVE_NR, CY_MMIO_MXU550_CLK_HF_NR);
 
-	if (cy_pd_ppu_set_power_mode((struct ppu_v1_reg *)CY_PPU_U55_BASE,
-				     (uint32_t)PPU_V1_MODE_ON) != CY_SYSPM_SUCCESS) {
+	if (cy_pd_ppu_set_power_mode((struct ppu_v1_reg *)CY_PPU_U55_BASE, (uint32_t)PPU_V1_MODE_ON) !=
+		CY_SYSPM_SUCCESS) {
 		return -EIO;
 	}
 
@@ -128,12 +125,12 @@ static int ethosu_ppc_open_u55(void) {
 
 	for (idx = 0U; idx < ARRAY_SIZE(ethosu_ppc_regions); idx++) {
 		if (Cy_Ppc_ConfigAttrib(PPC1, ethosu_ppc_regions[idx], &cycfg_unused_ppc_cfg) !=
-		    CY_PPC_SUCCESS) {
+			CY_PPC_SUCCESS) {
 			return -EIO;
 		}
 
 		if (Cy_Ppc_SetPcMask(PPC1, ethosu_ppc_regions[idx], PPC_PC_MASK_ALL_ACCESS) !=
-		    CY_PPC_SUCCESS) {
+			CY_PPC_SUCCESS) {
 			return -EIO;
 		}
 	}
@@ -184,8 +181,7 @@ static int ethosu_sau_add_ns(uint32_t base, uint32_t limit) {
 		SAU->RNR = idx;
 		if ((SAU->RLAR & SAU_RLAR_ENABLE_Msk) == 0U) {
 			SAU->RBAR = base & SAU_RBAR_BADDR_Msk;
-			SAU->RLAR = ((limit - ETHOSU_SAU_GRANULE) & SAU_RLAR_LADDR_Msk) |
-				    SAU_RLAR_ENABLE_Msk;
+			SAU->RLAR = ((limit - ETHOSU_SAU_GRANULE) & SAU_RLAR_LADDR_Msk) | SAU_RLAR_ENABLE_Msk;
 			return 0;
 		}
 	}
@@ -215,7 +211,7 @@ static int ethosu_sau_init(void) {
 /** Same as cy_ppc_unsecure_init(), but keeps the regions of peripherals the
  *  secure loader still uses (DMA, console UART, PDM) secure. */
 static cy_rslt_t ethosu_ppc_all_ns(PPC_Type *base, cy_en_prot_region_t start,
-				   cy_en_prot_region_t end) {
+								   cy_en_prot_region_t end) {
 	cy_rslt_t ret;
 	cy_en_prot_region_t region;
 
@@ -223,13 +219,13 @@ static cy_rslt_t ethosu_ppc_all_ns(PPC_Type *base, cy_en_prot_region_t start,
 
 	for (region = start; (ret == CY_PPC_SUCCESS) && (region <= end); region++) {
 		if ((region == PROT_PERI1_PPC1_PPC_PPC_SECURE) ||
-		    (region == PROT_PERI1_PPC1_PPC_PPC_NONSECURE)) {
+			(region == PROT_PERI1_PPC1_PPC_PPC_NONSECURE)) {
 			continue;
 		}
 
 		/* DW0/DW1 serve the running secure PDM DMA; keep them secure. */
 		if ((base == PPC0) && (region >= PROT_PERI0_DW0_DW) &&
-		    (region <= PROT_PERI0_DW1_CH_STRUCT15_CH)) {
+			(region <= PROT_PERI0_DW1_CH_STRUCT15_CH)) {
 			continue;
 		}
 
@@ -240,7 +236,7 @@ static cy_rslt_t ethosu_ppc_all_ns(PPC_Type *base, cy_en_prot_region_t start,
 
 		/* PDM0 is read by the secure DMA for the running microphone. */
 		if ((base == PPC1) && (region >= PROT_PERI1_PDM0_MAIN) &&
-		    (region <= PROT_PERI1_PDM0_CH5_RX)) {
+			(region <= PROT_PERI1_PDM0_CH5_RX)) {
 			continue;
 		}
 
@@ -260,12 +256,11 @@ static int ethosu_m55_boot_sequence(void) {
 	Cy_System_EnablePD1();
 
 	Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_CM55_TCM_512K_PERI_NR, CY_MMIO_CM55_TCM_512K_GROUP_NR,
-				     CY_MMIO_CM55_TCM_512K_SLAVE_NR,
-				     CY_MMIO_CM55_TCM_512K_CLK_HF_NR);
+								 CY_MMIO_CM55_TCM_512K_SLAVE_NR, CY_MMIO_CM55_TCM_512K_CLK_HF_NR);
 	Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_SMIF0_PERI_NR, CY_MMIO_SMIF0_GROUP_NR,
-				     CY_MMIO_SMIF0_SLAVE_NR, CY_MMIO_SMIF0_CLK_HF_NR);
+								 CY_MMIO_SMIF0_SLAVE_NR, CY_MMIO_SMIF0_CLK_HF_NR);
 	Cy_SysClk_PeriGroupSlaveInit(CY_MMIO_SMIF01_PERI_NR, CY_MMIO_SMIF01_GROUP_NR,
-				     CY_MMIO_SMIF01_SLAVE_NR, CY_MMIO_SMIF01_CLK_HF_NR);
+								 CY_MMIO_SMIF01_SLAVE_NR, CY_MMIO_SMIF01_CLK_HF_NR);
 
 	Cy_SysEnableSOCMEM(true);
 
