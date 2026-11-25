@@ -149,10 +149,6 @@ for ext in elf bin hex uf2; do
         cp ${BUILD_DIR}/zephyr/zephyr.$ext firmwares/zephyr-$variant.$ext
     fi
 done
-# Boards that sign the image (e.g. PSE84) must program the signed hex
-if [ -f ${BUILD_DIR}/zephyr/zephyr.signed.hex ]; then
-    cp ${BUILD_DIR}/zephyr/zephyr.signed.hex firmwares/zephyr-$variant.hex
-fi
 cp ${BUILD_DIR}/zephyr/zephyr.dts firmwares/zephyr-$variant.dts
 cp ${BUILD_DIR}/zephyr/.config firmwares/zephyr-$variant.config
 
